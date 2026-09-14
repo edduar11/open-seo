@@ -9,15 +9,15 @@
     // Spans are billed as observability events (free tier 200k/day); add a
     // traces head_sampling_rate below 1 if span volume becomes a cost concern.
     "traces": {
-      "enabled": true,
-    },
+      "enabled": true
+    }
   },
   // Smart Placement relocates only the `fetch` handler (cron + Workflow runs
   // stay at the edge) toward external subrequests — Postgres via Hyperdrive,
   // SEO APIs — not D1/KV/R2 bindings, so it's a DB no-op on the D1 default.
   // Must live here: a dashboard-only toggle is wiped by `wrangler deploy`.
   "placement": {
-    "mode": "smart",
+    "mode": "smart"
   },
   "workflows": [
     // The site-audit engine lives in the open-seo-audit aux worker
@@ -25,17 +25,17 @@
     // payloads, in-flight HTML) OOMed this worker's near-limit baseline
     // heap. This is a cross-script binding for starting audits and reading
     // instance status.
-    {
-      "name": "site-audit-workflow",
-      "binding": "SITE_AUDIT_WORKFLOW",
-      "class_name": "SiteAuditWorkflow",
-      "script_name": "open-seo-audit",
-    },
+    // {
+    //   "name": "site-audit-workflow",
+    //   "binding": "SITE_AUDIT_WORKFLOW",
+    //   "class_name": "SiteAuditWorkflow",
+    //   "script_name": "open-seo-audit"
+    // },
     {
       "name": "rank-check-workflow",
       "binding": "RANK_CHECK_WORKFLOW",
-      "class_name": "RankCheckWorkflow",
-    },
+      "class_name": "RankCheckWorkflow"
+    }
   ],
   // Durable Object backing the SAM in-app agent (Agents SDK AIChatAgent). One
   // instance per chat session; messages persist in the DO's SQLite.
@@ -46,33 +46,33 @@
     "bindings": [
       {
         "name": "SAM_CHAT",
-        "class_name": "SamChatAgent",
-      },
-    ],
+        "class_name": "SamChatAgent"
+      }
+    ]
   },
   // The site-audit engine lives in the open-seo-audit aux worker
   // (wrangler.audit.jsonc), including the scratchpad DO — the DO cannot be
   // bound cross-script here (the Cloudflare API rejects deleting the class
   // below while any binding still references its name). Cancel + GDPR
   // erasure go through this service binding's AuditEngine entrypoint.
-  "services": [
-    {
-      "binding": "AUDIT_ENGINE",
-      "service": "open-seo-audit",
-    },
-  ],
+  // "services": [
+  //   {
+  //     "binding": "AUDIT_ENGINE",
+  //     "service": "open-seo-audit"
+  //   }
+  // ],
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["OnboardingChatAgent"],
+      "new_sqlite_classes": ["OnboardingChatAgent"]
     },
     {
       "tag": "v2",
-      "new_sqlite_classes": ["SamChatAgent"],
+      "new_sqlite_classes": ["SamChatAgent"]
     },
     {
       "tag": "v3",
-      "new_sqlite_classes": ["AuditScratchpad"],
+      "new_sqlite_classes": ["AuditScratchpad"]
     },
     // AuditScratchpad moved to the open-seo-audit worker (no binding may
     // still reference the class name in the same upload — see the services
@@ -82,20 +82,20 @@
     // reconciler reaps them.
     {
       "tag": "v4",
-      "deleted_classes": ["AuditScratchpad"],
+      "deleted_classes": ["AuditScratchpad"]
     },
     // The onboarding strategy chat was removed: the namespace had had zero
     // invocations for months. Deleting the class destroys every instance's
     // stored conversation, which is the intent — nothing else reads it.
     {
       "tag": "v5",
-      "deleted_classes": ["OnboardingChatAgent"],
-    },
+      "deleted_classes": ["OnboardingChatAgent"]
+    }
   ],
   "triggers": {
     // Every 5 min: rank checks + stale-audit reconcile. Daily: OAuth KV GC.
     // Dispatched on controller.cron in src/server.ts `scheduled`.
-    "crons": ["*/5 * * * *", "17 3 * * *"],
+    "crons": ["*/5 * * * *", "17 3 * * *"]
   },
   // This config serves local dev and Docker self-host only. All Cloudflare
   // deployments — previews, prod, self-host — go through Alchemy
@@ -109,20 +109,20 @@
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "ecaaa44401ef4b30a1d0a70e0345a1f3",
+      "id": "ecaaa44401ef4b30a1d0a70e0345a1f3"
     },
     {
       "binding": "OAUTH_KV",
-      "id": "ecaaa44401ef4b30a1d0a70e0345a1f3",
-    },
+      "id": "ecaaa44401ef4b30a1d0a70e0345a1f3"
+    }
   ],
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "open-seo",
       "database_id": "c44080c3-7f76-48a7-b0f1-df67869eb01a",
-      "migrations_dir": "drizzle",
-    },
+      "migrations_dir": "drizzle"
+    }
   ],
   // Postgres scale path (opt-in; D1 is the default). Hyperdrive is the ONLY way
   // the app connects to Postgres — there is no direct-connection fallback. For
@@ -137,13 +137,13 @@
   //   {
   //     "binding": "HYPERDRIVE",
   //     "id": "9d64ccfb559f44449ce52a143912f898",
-  //     "localConnectionString": "postgres://openseo:openseo@localhost:5433/openseo",
-  //   },
+  //     "localConnectionString": "postgres://openseo:openseo@localhost:5433/openseo"
+  //   }
   // ],
   "r2_buckets": [
     {
       "bucket_name": "open-seo",
-      "binding": "R2",
-    },
-  ],
+      "binding": "R2"
+    }
+  ]
 }
